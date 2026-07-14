@@ -32,7 +32,7 @@ public class ConsoleUI {
             String operacao = scanner.nextLine();
 
             switch (operacao) {
-                case "1" -> this.gerenciarPerfil();
+                case "1" -> this.managerProfile();
                 case "2" -> System.out.println("Gerenciamento de projetos ainda não implementado.");
                 case "3" -> System.out.println("Gerenciamento de experiências ainda não implementado.");
                 case "4" -> System.out.println("Gerenciamento de formação ainda não implementado.");
@@ -50,15 +50,16 @@ public class ConsoleUI {
         }
     }
 
-    private  void gerenciarPerfil(){
+    private  void managerProfile(){
         boolean running = true;
 
         while (running) {
             System.out.println();
             System.out.println("====== Gerenciamento de perfil ======");
-            System.out.println("1. Cadastrar perfil");
-            System.out.println("2. Visualisar dados do perfil");
-            System.out.println("3. Gerenciar experiências");
+            System.out.println("1. Cadastrar perfil.");
+            System.out.println("2. Visualisar dados do perfil.");
+            System.out.println("3. Atualizar dados do perfil.");
+            System.out.println("4. Apagar perfil.");
             System.out.println("0. Sair");
             System.out.print("Escolha uma opção: ");
             String operacao = scanner.nextLine();
@@ -66,7 +67,8 @@ public class ConsoleUI {
             switch (operacao) {
                 case "1" -> this.createProfile();
                 case "2" -> System.out.println(this.profileController.getPerfil());
-                case "3" -> System.out.println("Gerenciamento de experiências ainda não implementado.");
+                case "3" -> this.updateProfile();
+                case "4" -> this.deleteProfile();
                 case "0" -> {
                     running = false;
                     System.out.println("Encerrando o sistema...");
@@ -79,11 +81,11 @@ public class ConsoleUI {
     }
 
     private void createProfile() {
-        String name = new inputReader("Nome", scanner).readInput();
-        String professionalTitle = new inputReader("Título profissional", scanner).readInput();
-        String summary = new inputReader("Resumo", scanner).readInput();
-        String email = new inputReader("E-mail", scanner).readInput();
-        String city = new inputReader("Cidade", scanner).readInput();
+        String name = new inputReader("Digite seu nome:", scanner).readInput();
+        String professionalTitle = new inputReader("Digite seu título profissional:", scanner).readInput();
+        String summary = new inputReader("Digite um resumo:", scanner).readInput();
+        String email = new inputReader("Digite seu e-mail:", scanner).readInput();
+        String city = new inputReader("Digite sua cidade:", scanner).readInput();
 
         profileController.createProfile(
                 name,
@@ -94,5 +96,30 @@ public class ConsoleUI {
         );
 
         System.out.println("Perfil cadastrado com sucesso.");
+    }
+
+    private void updateProfile() {
+        String name = new inputReader("Digite seu nome:", scanner).readInput();
+        String professionalTitle = new inputReader("Digite seu título profissional:", scanner).readInput();
+        String summary = new inputReader("Digite um resumo:", scanner).readInput();
+        String email = new inputReader("Digite seu e-mail:", scanner).readInput();
+        String city = new inputReader("Digite sua cidade:", scanner).readInput();
+
+        profileController.updateProfile(
+                name,
+                professionalTitle,
+                summary,
+                email,
+                city
+        );
+
+        System.out.println("Perfil atualizado com sucesso.");
+    }
+
+    private void deleteProfile(){
+        String confirmation = new inputReader("Tem certeza que deseja apagar o perfil? (s/n):", scanner).readInput();
+        if (confirmation.equalsIgnoreCase("s")) {
+            profileController.deleteProfile();
+        }
     }
 }

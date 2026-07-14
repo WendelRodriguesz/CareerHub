@@ -10,21 +10,12 @@ import java.util.Scanner;
 public class CareerHubApplication {
 
     public static void main(String[] args) {
-//        Profile profile = new Profile(
-//                "Wendel Rodrigues",
-//                "Desenvolvedor Full Stack",
-//                "Estudante de Engenharia de Software e desenvolvedor de aplicações web.",
-//                "wendeldev2010@gmail.com",
-//                "Quixadá, CE"
-//        );
         Scanner scanner = new Scanner(System.in);
 
         ProfileService profileService = new ProfileService();
-        ProfileController profileController =
-                new ProfileController(profileService);
+        ProfileController profileController = new ProfileController(profileService);
 
-        ConsoleUI consoleUI =
-                new ConsoleUI(scanner, profileController);
+        ConsoleUI consoleUI = new ConsoleUI(scanner, profileController);
 
         consoleUI.start();
 

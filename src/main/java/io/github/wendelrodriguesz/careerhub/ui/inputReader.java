@@ -3,8 +3,8 @@ package io.github.wendelrodriguesz.careerhub.ui;
 import java.util.Scanner;
 
 public class inputReader {
-    private String label;
-    private Scanner scanner;
+    private final String label;
+    private final Scanner scanner;
 
     public inputReader(String label, Scanner scanner){
         this.label = label;
@@ -12,7 +12,7 @@ public class inputReader {
     }
 
     public String readInput() {
-        System.out.print("Digite seu " + this.label + ": ");
+        System.out.print(this.label);
         return this.scanner.nextLine();
     }
 }
