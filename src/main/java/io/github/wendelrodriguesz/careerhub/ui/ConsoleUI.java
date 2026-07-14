@@ -1,17 +1,22 @@
 package io.github.wendelrodriguesz.careerhub.ui;
 
 import io.github.wendelrodriguesz.careerhub.controller.ProfileController;
-import io.github.wendelrodriguesz.careerhub.ui.inputReader;
+import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProfileDataException;
+import io.github.wendelrodriguesz.careerhub.exceptions.ProfileAlreadyExistsException;
+import io.github.wendelrodriguesz.careerhub.exceptions.ProfileNotFoundException;
+import io.github.wendelrodriguesz.careerhub.model.Profile;
 
 import java.util.Scanner;
 
 public class ConsoleUI {
     private final Scanner scanner;
     private final ProfileController profileController;
+    private final InputReader inputReader;
 
     public ConsoleUI(Scanner scanner, ProfileController profileController){
         this.scanner = scanner;
         this.profileController = profileController;
+        this.inputReader = new InputReader(scanner);
     }
 
     public void start (){
@@ -57,22 +62,21 @@ public class ConsoleUI {
             System.out.println();
             System.out.println("====== Gerenciamento de perfil ======");
             System.out.println("1. Cadastrar perfil.");
-            System.out.println("2. Visualisar dados do perfil.");
+            System.out.println("2. Visualizar dados do perfil.");
             System.out.println("3. Atualizar dados do perfil.");
             System.out.println("4. Apagar perfil.");
-            System.out.println("0. Sair");
+            System.out.println("0. Voltar ao menu principal");
             System.out.print("Escolha uma opção: ");
             String operacao = scanner.nextLine();
 
             switch (operacao) {
                 case "1" -> this.createProfile();
-                case "2" -> System.out.println(this.profileController.getPerfil());
+                case "2" -> this.showProfile();
                 case "3" -> this.updateProfile();
                 case "4" -> this.deleteProfile();
                 case "0" -> {
                     running = false;
-                    System.out.println("Encerrando o sistema...");
-                    System.out.println("Até logo!");
+                    System.out.println("Voltando ao menu principal...");
                     System.out.println("======================================");
                 }
                 default -> System.out.println("Opção inválida. Digite uma opção do menu.");
@@ -80,46 +84,78 @@ public class ConsoleUI {
         }
     }
 
+    private void showProfile() {
+        try {
+            Profile profile = profileController.getProfile();
+
+            System.out.println();
+            System.out.println("---------- PERFIL ----------");
+            System.out.println("Nome: " + profile.getName());
+            System.out.println(
+                    "Título: " + profile.getProfessionalTitle()
+            );
+            System.out.println("Resumo: " + profile.getSummary());
+            System.out.println("E-mail: " + profile.getEmail());
+            System.out.println("Cidade: " + profile.getCity());
+
+        } catch (ProfileNotFoundException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
     private void createProfile() {
-        String name = new inputReader("Digite seu nome:", scanner).readInput();
-        String professionalTitle = new inputReader("Digite seu título profissional:", scanner).readInput();
-        String summary = new inputReader("Digite um resumo:", scanner).readInput();
-        String email = new inputReader("Digite seu e-mail:", scanner).readInput();
-        String city = new inputReader("Digite sua cidade:", scanner).readInput();
+        String name = this.inputReader.readInput("Digite seu nome:");
+        String professionalTitle = this.inputReader.readInput("Digite seu título profissional:");
+        String summary = this.inputReader.readInput("Digite um resumo:");
+        String email = this.inputReader.readInput("Digite seu e-mail:");
+        String city = this.inputReader.readInput("Digite sua cidade:");
 
-        profileController.createProfile(
-                name,
-                professionalTitle,
-                summary,
-                email,
-                city
-        );
+        try{
+            profileController.createProfile(
+                    name,
+                    professionalTitle,
+                    summary,
+                    email,
+                    city
+            );
 
-        System.out.println("Perfil cadastrado com sucesso.");
+            System.out.println("Perfil cadastrado com sucesso.");
+        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void updateProfile() {
-        String name = new inputReader("Digite seu nome:", scanner).readInput();
-        String professionalTitle = new inputReader("Digite seu título profissional:", scanner).readInput();
-        String summary = new inputReader("Digite um resumo:", scanner).readInput();
-        String email = new inputReader("Digite seu e-mail:", scanner).readInput();
-        String city = new inputReader("Digite sua cidade:", scanner).readInput();
+        String name = this.inputReader.readInput("Digite seu nome:");
+        String professionalTitle = this.inputReader.readInput("Digite seu título profissional:");
+        String summary = this.inputReader.readInput("Digite um resumo:");
+        String email = this.inputReader.readInput("Digite seu e-mail:");
+        String city = this.inputReader.readInput("Digite sua cidade:");
 
-        profileController.updateProfile(
-                name,
-                professionalTitle,
-                summary,
-                email,
-                city
-        );
+        try{
+            profileController.updateProfile(
+                    name,
+                    professionalTitle,
+                    summary,
+                    email,
+                    city
+            );
+            System.out.println("Perfil atualizado com sucesso.");
+        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e){
+            System.out.println(e.getMessage());
+        }
 
-        System.out.println("Perfil atualizado com sucesso.");
     }
 
     private void deleteProfile(){
-        String confirmation = new inputReader("Tem certeza que deseja apagar o perfil? (s/n):", scanner).readInput();
+        String confirmation = this.inputReader.readInput("Tem certeza que deseja apagar o perfil? (s/n):");
         if (confirmation.equalsIgnoreCase("s")) {
-            profileController.deleteProfile();
+            try{
+                profileController.deleteProfile();
+                System.out.println("Perfil deletado com sucesso!");
+            } catch (ProfileNotFoundException e){
+                System.out.println(e.getMessage());
+            }
         }
     }
 }

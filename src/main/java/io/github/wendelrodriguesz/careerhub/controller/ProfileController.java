@@ -1,16 +1,13 @@
 package io.github.wendelrodriguesz.careerhub.controller;
 
+import io.github.wendelrodriguesz.careerhub.model.Profile;
 import io.github.wendelrodriguesz.careerhub.service.ProfileService;
 
 public class ProfileController {
-    private ProfileService profileService;
+    private final ProfileService profileService;
 
     public ProfileController(ProfileService profileService) {
         this.profileService = profileService;
-    }
-
-    public void managerProfile() {
-        profileService.managerProfile();
     }
 
     public void createProfile(String name, String professionalTitle, String summary, String email, String city) {
@@ -25,7 +22,7 @@ public class ProfileController {
         profileService.deleteProfile();
     }
 
-    public String getPerfil(){
-        return profileService.getPerfil();
+    public Profile getProfile(){
+        return profileService.getProfile();
     }
 }

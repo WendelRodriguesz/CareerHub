@@ -1,7 +1,6 @@
 package io.github.wendelrodriguesz.careerhub.app;
 
 import io.github.wendelrodriguesz.careerhub.controller.ProfileController;
-import io.github.wendelrodriguesz.careerhub.model.Profile;
 import io.github.wendelrodriguesz.careerhub.service.ProfileService;
 import io.github.wendelrodriguesz.careerhub.ui.ConsoleUI;
 
