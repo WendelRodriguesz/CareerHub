@@ -41,16 +41,6 @@ public class Profile {
         return this.city;
     }
 
-    public String getInfos() {
-        return ("\n" +
-                "\n---------- PERFIL ----------" +
-                "\nNome: " + this.getName() +
-                "\nTítulo: " + this.getProfessionalTitle() +
-                "\nResumo: " + this.getSummary() +
-                "\nE-mail: " + this.getEmail() +
-                "\nCidade: " + this.getCity());
-    }
-
     public void setName(String name) {
         this.name = name;
     }
