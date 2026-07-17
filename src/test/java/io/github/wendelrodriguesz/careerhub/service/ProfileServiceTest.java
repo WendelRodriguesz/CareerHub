@@ -13,6 +13,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ProfileServiceTest {
+    private static final String VALID_NAME = "John Doe";
+    private static final String VALID_PROFESSIONAL_TITLE = "Software Engineer";
+    private static final String VALID_SUMMARY = "Experienced developer with a passion for creating innovative solutions.";
+    private static final String VALID_EMAIL = "john.doe@example.com";
+    private static final String VALID_CITY = "New York";
+
     private ProfileService profileService;
 
     // Executa sempre antes de cada teste
@@ -25,21 +31,21 @@ public class ProfileServiceTest {
     @DisplayName("Deve criar um novo perfil")
     void shouldCreateProfile() {
         profileService.createProfile(
-                "John Doe",
-                "Software Engineer",
-                "Experienced developer with a passion for creating innovative solutions.",
-                "john.doe@example.com",
-                "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         Profile profile = profileService.getProfile();
 
         assertNotNull(profile);
 
-        assertEquals("John Doe", profile.getName());
-        assertEquals("Software Engineer", profile.getProfessionalTitle());
-        assertEquals("Experienced developer with a passion for creating innovative solutions.", profile.getSummary());
-        assertEquals("john.doe@example.com", profile.getEmail());
+        assertEquals(VALID_NAME, profile.getName());
+        assertEquals(VALID_PROFESSIONAL_TITLE, profile.getProfessionalTitle());
+        assertEquals(VALID_SUMMARY, profile.getSummary());
+        assertEquals(VALID_EMAIL, profile.getEmail());
         assertEquals("New York", profile.getCity());
     }
 
@@ -48,12 +54,7 @@ public class ProfileServiceTest {
     @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com algum campo vazio")
     void shouldThrowExceptionWhenCreatingProfileWithEmptyFields() {
         InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
-                () -> profileService.createProfile(
-                        "John Doe",
-                        "Software Engineer",
-                        "Experienced developer with a passion for creating innovative solutions.",
-                        " ",
-                        "Cidade Nova")
+                () -> profileService.createProfile(VALID_NAME, VALID_PROFESSIONAL_TITLE, VALID_SUMMARY, " ", VALID_CITY)
         );
 
         assertEquals("E-mail é obrigatório.", exception.getMessage());
@@ -63,11 +64,11 @@ public class ProfileServiceTest {
     @DisplayName("Deve lançar uma exceção ao tentar criar um segundo perfil")
     void shouldThrowExceptionWhenCreatingSecondProfile() {
         profileService.createProfile(
-                "John Doe",
-                "Software Engineer",
-                "Experienced developer with a passion for creating innovative solutions.",
-                "john.doe@example.com",
-                "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         ProfileAlreadyExistsException exception = assertThrows(
@@ -91,22 +92,22 @@ public class ProfileServiceTest {
     @DisplayName("Deve retornar o perfil existente")
     void shouldReturnExistingProfile(){
         profileService.createProfile(
-            "John Doe",
-            "Software Engineer",
-            "Experienced developer with a passion for creating innovative solutions.",
-            "john.doe@example.com",
-            "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         Profile profile = profileService.getProfile();
 
         assertNotNull(profile);
 
-        assertEquals("John Doe", profile.getName());
-        assertEquals("Software Engineer", profile.getProfessionalTitle());
-        assertEquals("Experienced developer with a passion for creating innovative solutions.", profile.getSummary());
-        assertEquals("john.doe@example.com", profile.getEmail());
-        assertEquals("New York", profile.getCity());
+        assertEquals(VALID_NAME, profile.getName());
+        assertEquals(VALID_PROFESSIONAL_TITLE, profile.getProfessionalTitle());
+        assertEquals(VALID_SUMMARY, profile.getSummary());
+        assertEquals(VALID_EMAIL, profile.getEmail());
+        assertEquals(VALID_CITY, profile.getCity());
     }
 
     @Test
@@ -124,11 +125,11 @@ public class ProfileServiceTest {
     @DisplayName("Deve atualizar um perfil existente")
     void shouldUpdateExistingProfile(){
         profileService.createProfile(
-                "John Doe",
-                "Software Engineer",
-                "Experienced developer with a passion for creating innovative solutions.",
-                "john.doe@example.com",
-                "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         profileService.updateProfile(
@@ -154,11 +155,11 @@ public class ProfileServiceTest {
     @DisplayName("Deve atualizar apenas os campos válidos de um perfil existente")
     void shouldUpdateOnlyValidFieldsExistingProfile(){
         profileService.createProfile(
-                "John Doe",
-                "Software Engineer",
-                "Experienced developer with a passion for creating innovative solutions.",
-                "john.doe@example.com",
-                "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         profileService.updateProfile(
@@ -173,10 +174,10 @@ public class ProfileServiceTest {
 
         assertNotNull(profile);
 
-        assertEquals("John Doe", profile.getName());
-        assertEquals("Software Engineer", profile.getProfessionalTitle());
+        assertEquals(VALID_NAME, profile.getName());
+        assertEquals(VALID_PROFESSIONAL_TITLE, profile.getProfessionalTitle());
         assertEquals("Updated summary.", profile.getSummary());
-        assertEquals("john.doe@example.com", profile.getEmail());
+        assertEquals(VALID_EMAIL, profile.getEmail());
         assertEquals("San Francisco", profile.getCity());
     }
 
@@ -200,11 +201,11 @@ public class ProfileServiceTest {
     @DisplayName("Deve lançar uma exceção ao tentar atualizar um perfil com todos os campos vazios")
     void shouldThrowExceptionWhenUpdatingProfileWithEmptyFields() {
         profileService.createProfile(
-                "John Doe",
-                "Software Engineer",
-                "Experienced developer with a passion for creating innovative solutions.",
-                "john.doe@example.com",
-                "New York"
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
         );
 
         Profile profile = profileService.getProfile();
@@ -218,4 +219,35 @@ public class ProfileServiceTest {
         assertEquals("Nenhum dado informado para atualizar.", exception.getMessage());
     }
 
+    @Test
+    @DisplayName("Deve lançar uma exceção ao tentar excluir um perfil inexistente")
+    void shouldThrowExceptionWhenDeletingExistingProfile(){
+        ProfileNotFoundException exception = assertThrows(ProfileNotFoundException.class,
+                () -> profileService.deleteProfile()
+        );
+        assertEquals("Nenhum perfil cadastrado para apagar.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve excluir um perfil existente")
+    void shouldDeleteExistingProfile(){
+        profileService.createProfile(
+                VALID_NAME,
+                VALID_PROFESSIONAL_TITLE,
+                VALID_SUMMARY,
+                VALID_EMAIL,
+                VALID_CITY
+        );
+
+        Profile profile = profileService.getProfile();
+
+        assertNotNull(profile);
+
+        profileService.deleteProfile();
+
+        ProfileNotFoundException exception = assertThrows(ProfileNotFoundException.class,
+                () -> profileService.deleteProfile()
+        );
+        assertEquals("Nenhum perfil cadastrado para apagar.", exception.getMessage());
+    }
 }
