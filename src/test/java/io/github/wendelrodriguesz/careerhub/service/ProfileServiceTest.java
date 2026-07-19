@@ -51,13 +51,53 @@ public class ProfileServiceTest {
 
     // Divida técnica: Depois testar para cado campo.
     @Test
-    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com algum campo vazio")
+    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo e-mail vazio")
+    void shouldThrowExceptionWhenCreatingProfileWithEmptyName() {
+        InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
+                () -> profileService.createProfile(" ", VALID_PROFESSIONAL_TITLE, VALID_SUMMARY, VALID_EMAIL, VALID_CITY)
+        );
+
+        assertEquals("Nome é obrigatório.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo titulo profissional vazio")
     void shouldThrowExceptionWhenCreatingProfileWithEmptyFields() {
+        InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
+                () -> profileService.createProfile(VALID_NAME, " ", VALID_SUMMARY, VALID_EMAIL, VALID_CITY)
+        );
+
+        assertEquals("Título profissional é obrigatório.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo resumo vazio")
+    void shouldThrowExceptionWhenCreatingProfileWithEmptySummary() {
+        InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
+                () -> profileService.createProfile(VALID_NAME, VALID_PROFESSIONAL_TITLE, " ", VALID_EMAIL, VALID_CITY)
+        );
+
+        assertEquals("Resumo é obrigatório.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo e-mail vazio")
+    void shouldThrowExceptionWhenCreatingProfileWithEmptyEmail() {
         InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
                 () -> profileService.createProfile(VALID_NAME, VALID_PROFESSIONAL_TITLE, VALID_SUMMARY, " ", VALID_CITY)
         );
 
         assertEquals("E-mail é obrigatório.", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo cidade vazio")
+    void shouldThrowExceptionWhenCreatingProfileWithEmptyCity() {
+        InvalidProfileDataException exception = assertThrows( InvalidProfileDataException.class,
+                () -> profileService.createProfile(VALID_NAME, VALID_PROFESSIONAL_TITLE, VALID_SUMMARY, VALID_EMAIL, " ")
+        );
+
+        assertEquals("Cidade é obrigatório.", exception.getMessage());
     }
 
     @Test
