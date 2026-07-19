@@ -1,6 +1,7 @@
 package io.github.wendelrodriguesz.careerhub.ui;
 
 import io.github.wendelrodriguesz.careerhub.controller.ProfileController;
+import io.github.wendelrodriguesz.careerhub.controller.ProjectController;
 import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProfileDataException;
 import io.github.wendelrodriguesz.careerhub.exceptions.ProfileAlreadyExistsException;
 import io.github.wendelrodriguesz.careerhub.exceptions.ProfileNotFoundException;
@@ -11,11 +12,13 @@ import java.util.Scanner;
 public class ConsoleUI {
     private final Scanner scanner;
     private final ProfileController profileController;
+    private final ProjectController projectController;
     private final InputReader inputReader;
 
-    public ConsoleUI(Scanner scanner, ProfileController profileController){
+    public ConsoleUI(Scanner scanner, ProfileController profileController, ProjectController projectController){
         this.scanner = scanner;
         this.profileController = profileController;
+        this.projectController = projectController;
         this.inputReader = new InputReader(scanner);
     }
 
@@ -38,7 +41,7 @@ public class ConsoleUI {
 
             switch (operacao) {
                 case "1" -> this.managerProfile();
-                case "2" -> System.out.println("Gerenciamento de projetos ainda não implementado.");
+                case "2" -> this.managerProjects();
                 case "3" -> System.out.println("Gerenciamento de experiências ainda não implementado.");
                 case "4" -> System.out.println("Gerenciamento de formação ainda não implementado.");
                 case "5" -> System.out.println("Gerenciamento de habilidades ainda não implementado.");
@@ -157,5 +160,87 @@ public class ConsoleUI {
                 System.out.println(e.getMessage());
             }
         }
+    }
+
+    private  void managerProjects(){
+        boolean running = true;
+
+        while (running) {
+            System.out.println();
+            System.out.println("====== Gerenciamento de projetos ======");
+            System.out.println("1. Cadastrar projeto.");
+            System.out.println("2. Listar projetos.");
+            System.out.println("3. Buscar projeto por ID");
+            System.out.println("4. Atualizar dados do projeto por ID.");
+            System.out.println("5. Apagar projeto por ID.");
+            System.out.println("0. Voltar ao menu principal");
+            System.out.print("Escolha uma opção: ");
+            String operacao = scanner.nextLine();
+
+            switch (operacao) {
+                case "1" -> this.createProject();
+                case "2" -> this.listProjects();
+                case "3" -> this.showProjectById();
+                case "4" -> this.updateProjectById();
+                case "5" -> this.deleteProjectById();
+                case "0" -> {
+                    running = false;
+                    System.out.println("Voltando ao menu principal...");
+                    System.out.println("======================================");
+                }
+                default -> System.out.println("Opção inválida. Digite uma opção do menu.");
+            }
+        }
+    }
+
+    private void createProject(){
+        String title = this.inputReader.readInput("Digite o título do projeto:");
+        String description = this.inputReader.readInput("Digite a descrição do projeto:");
+        String repositoryUrl = this.inputReader.readInput("Digite a URL do repositório:");
+
+        try{
+            this.projectController.createProject(
+                    title,
+                    description,
+                    repositoryUrl
+            );
+
+            System.out.println("Projeto cadastrado com sucesso.");
+        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void listProjects(){
+        this.projectController.getProjects();
+    }
+    private void showProjectById(){
+        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
+        this.projectController.getProjectById(id);
+    }
+    private void updateProjectById(){
+        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
+        String title = this.inputReader.readInput("Digite o título do projeto:");
+        String description = this.inputReader.readInput("Digite a descrição do projeto:");
+        String repositoryUrl = this.inputReader.readInput("Digite a URL do repositório:");
+
+        try{
+            this.projectController.updateProjectById(
+                    id,
+                    title,
+                    description,
+                    repositoryUrl
+            );
+
+            System.out.println("Projeto atualizado com sucesso.");
+        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void deleteProjectById(){
+        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
+        this.projectController.deleteProjectById(id);
+        System.out.println("Projeto apagado com sucesso.");
     }
 }
