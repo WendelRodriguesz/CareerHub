@@ -2,11 +2,11 @@ package io.github.wendelrodriguesz.careerhub.ui;
 
 import io.github.wendelrodriguesz.careerhub.controller.ProfileController;
 import io.github.wendelrodriguesz.careerhub.controller.ProjectController;
-import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProfileDataException;
-import io.github.wendelrodriguesz.careerhub.exceptions.ProfileAlreadyExistsException;
-import io.github.wendelrodriguesz.careerhub.exceptions.ProfileNotFoundException;
+import io.github.wendelrodriguesz.careerhub.exceptions.*;
 import io.github.wendelrodriguesz.careerhub.model.Profile;
+import io.github.wendelrodriguesz.careerhub.model.Project;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleUI {
@@ -193,39 +193,96 @@ public class ConsoleUI {
         }
     }
 
-    private void createProject(){
-        String title = this.inputReader.readInput("Digite o título do projeto:");
-        String description = this.inputReader.readInput("Digite a descrição do projeto:");
-        String repositoryUrl = this.inputReader.readInput("Digite a URL do repositório:");
+    private void createProject() {
+        String title = inputReader.readInput(
+                "Digite o título do projeto:"
+        );
 
-        try{
-            this.projectController.createProject(
+        String description = inputReader.readInput(
+                "Digite a descrição do projeto:"
+        );
+
+        String repositoryUrl = inputReader.readInput(
+                "Digite a URL do repositório:"
+        );
+
+        try {
+            projectController.createProject(
                     title,
                     description,
                     repositoryUrl
             );
 
             System.out.println("Projeto cadastrado com sucesso.");
-        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e) {
-            System.out.println(e.getMessage());
+
+        } catch (InvalidProjectDataException exception) {
+            System.out.println(exception.getMessage());
         }
     }
 
-    private void listProjects(){
-        this.projectController.getProjects();
-    }
-    private void showProjectById(){
-        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
-        this.projectController.getProjectById(id);
-    }
-    private void updateProjectById(){
-        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
-        String title = this.inputReader.readInput("Digite o título do projeto:");
-        String description = this.inputReader.readInput("Digite a descrição do projeto:");
-        String repositoryUrl = this.inputReader.readInput("Digite a URL do repositório:");
+    private void listProjects() {
+        List<Project> projects = projectController.getProjects();
 
-        try{
-            this.projectController.updateProjectById(
+        if (projects.isEmpty()) {
+            System.out.println("Nenhum projeto cadastrado.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("========== PROJETOS ==========");
+
+        for (Project project : projects) {
+            showProject(project);
+        }
+    }
+
+    private void showProject(Project project) {
+        System.out.println();
+        System.out.println("------------------------------");
+        System.out.println("ID: " + project.getId());
+        System.out.println("Título: " + project.getTitle());
+        System.out.println(
+                "Descrição: " + project.getDescription()
+        );
+        System.out.println(
+                "URL do repositório: "
+                        + project.getRepositoryUrl()
+        );
+    }
+
+    private void showProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            Project project =
+                    projectController.getProjectById(id);
+
+            showProject(project);
+
+        } catch (
+                NumberFormatException
+                | ProjectNotFoundException exception
+        ) {
+            System.out.println(exception.getMessage());
+        }
+    }
+    private void updateProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            String title = inputReader.readInput(
+                    "Novo título ou Enter para manter:"
+            );
+
+            String description = inputReader.readInput(
+                    "Nova descrição ou Enter para manter:"
+            );
+
+            String repositoryUrl = inputReader.readInput(
+                    "Nova URL ou Enter para manter:"
+            );
+
+            projectController.updateProjectById(
                     id,
                     title,
                     description,
@@ -233,14 +290,38 @@ public class ConsoleUI {
             );
 
             System.out.println("Projeto atualizado com sucesso.");
-        } catch (ProfileAlreadyExistsException | InvalidProfileDataException e) {
-            System.out.println(e.getMessage());
+
+        } catch (
+                ProjectNotFoundException
+                | InvalidProjectDataException
+                | NumberFormatException exception
+        ) {
+            System.out.println(exception.getMessage());
         }
     }
 
-    private void deleteProjectById(){
-        Long id = Long.parseLong(this.inputReader.readInput("Digite o ID do projeto:"));
-        this.projectController.deleteProjectById(id);
-        System.out.println("Projeto apagado com sucesso.");
+    private void deleteProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            String confirmation = inputReader.readInput(
+                    "Tem certeza que deseja apagar? (s/n):"
+            );
+
+            if (!confirmation.equalsIgnoreCase("s")) {
+                System.out.println("Exclusão cancelada.");
+                return;
+            }
+
+            projectController.deleteProjectById(id);
+
+            System.out.println("Projeto apagado com sucesso.");
+
+        } catch (
+                ProjectNotFoundException
+                | NumberFormatException exception
+        ) {
+            System.out.println(exception.getMessage());
+        }
     }
 }

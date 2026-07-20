@@ -1,19 +1,39 @@
 package io.github.wendelrodriguesz.careerhub.service;
 
+import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProjectDataException;
+import io.github.wendelrodriguesz.careerhub.exceptions.ProjectNotFoundException;
 import io.github.wendelrodriguesz.careerhub.model.Project;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProjectService {
+
     private final List<Project> projects = new ArrayList<>();
     private long nextId = 1;
 
+    public void createProject(
+            String title,
+            String description,
+            String repositoryUrl
+    ) {
+        validateRequiredField(title, "Título");
+        validateRequiredField(description, "Descrição");
+        validateRequiredField(repositoryUrl, "URL do repositório");
+
+        Project project = new Project(
+                nextId,
+                title.trim(),
+                description.trim(),
+                repositoryUrl.trim()
+        );
+
+        projects.add(project);
+        nextId++;
+    }
+
     public List<Project> getProjects() {
-            for (Project project : projects){
-                showProjectById(project.getId());
-            }
-        return new ArrayList<>(projects);
+        return List.copyOf(projects);
     }
 
     public Project getProjectById(long id) {
@@ -22,38 +42,64 @@ public class ProjectService {
                 return project;
             }
         }
-        return null;
+
+        throw new ProjectNotFoundException(
+                "Nenhum projeto encontrado com o ID " + id + "."
+        );
     }
 
-    public void showProjectById(long id){
+    public void updateProjectById(
+            long id,
+            String title,
+            String description,
+            String repositoryUrl
+    ) {
         Project project = getProjectById(id);
-        if(project != null){
-            System.out.println("============");
-            System.out.println("ID: " + project.getId());
-            System.out.println("Titulo: " + project.getTitle());
-            System.out.println("Descrição: " + project.getDescription());
-            System.out.println("URL do repositório: " + project.getRepositoryUrl());
+
+        if (
+                isBlank(title)
+                        && isBlank(description)
+                        && isBlank(repositoryUrl)
+        ) {
+            throw new InvalidProjectDataException(
+                    "Nenhum dado informado para atualizar."
+            );
+        }
+
+        if (hasText(title)) {
+            project.setTitle(title.trim());
+        }
+
+        if (hasText(description)) {
+            project.setDescription(description.trim());
+        }
+
+        if (hasText(repositoryUrl)) {
+            project.setRepositoryUrl(repositoryUrl.trim());
         }
     }
 
-    public void addProject(String title, String description, String repositoryUrl) {
-        Project project = new Project(nextId++, title, description, repositoryUrl);
-        projects.add(project);
+    public void deleteProjectById(long id) {
+        Project project = getProjectById(id);
+        projects.remove(project);
     }
 
-    public void updateProjectById(long id, String title, String description, String repositoryUrl) {
-        Project project = getProjectById(id);
-        if (project != null) {
-            project.setTitle(title);
-            project.setDescription(description);
-            project.setRepositoryUrl(repositoryUrl);
+    private void validateRequiredField(
+            String value,
+            String fieldName
+    ) {
+        if (isBlank(value)) {
+            throw new InvalidProjectDataException(
+                    fieldName + " é obrigatório."
+            );
         }
     }
 
-    public void deleteProjectByID(long id){
-        Project project = getProjectById(id);
-        if (project != null) {
-            projects.remove(project);
-        }
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
     }
 }

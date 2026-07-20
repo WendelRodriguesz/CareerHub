@@ -1,5 +1,7 @@
 package io.github.wendelrodriguesz.careerhub.service;
 
+import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProjectDataException;
+import io.github.wendelrodriguesz.careerhub.exceptions.ProjectNotFoundException;
 import io.github.wendelrodriguesz.careerhub.model.Project;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -8,16 +10,18 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@DisplayName("Testes do serviço de projetos")
 class ProjectServiceTest {
 
     private static final String VALID_TITLE = "CareerHub";
+
     private static final String VALID_DESCRIPTION =
             "Sistema para gerenciamento de portfólio profissional.";
+
     private static final String VALID_REPOSITORY_URL =
             "https://github.com/WendelRodriguesz/careerhub";
 
@@ -30,15 +34,13 @@ class ProjectServiceTest {
 
     @Test
     @DisplayName("Deve cadastrar um projeto")
-    void shouldAddProject() {
-        // Act
-        projectService.addProject(
+    void shouldCreateProject() {
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
         );
 
-        // Assert
         List<Project> projects = projectService.getProjects();
 
         assertEquals(1, projects.size());
@@ -48,7 +50,10 @@ class ProjectServiceTest {
         assertNotNull(project);
         assertEquals(1L, project.getId());
         assertEquals(VALID_TITLE, project.getTitle());
-        assertEquals(VALID_DESCRIPTION, project.getDescription());
+        assertEquals(
+                VALID_DESCRIPTION,
+                project.getDescription()
+        );
         assertEquals(
                 VALID_REPOSITORY_URL,
                 project.getRepositoryUrl()
@@ -56,7 +61,7 @@ class ProjectServiceTest {
     }
 
     @Test
-    @DisplayName("Deve iniciar a lista de projetos vazia")
+    @DisplayName("Deve iniciar com uma lista de projetos vazia")
     void shouldStartWithEmptyProjectList() {
         List<Project> projects = projectService.getProjects();
 
@@ -67,13 +72,13 @@ class ProjectServiceTest {
     @Test
     @DisplayName("Deve listar todos os projetos cadastrados")
     void shouldListAllProjects() {
-        projectService.addProject(
+        projectService.createProject(
                 "CareerHub",
                 "Portfólio profissional",
                 "https://github.com/user/careerhub"
         );
 
-        projectService.addProject(
+        projectService.createProject(
                 "GymOps",
                 "Sistema para gerenciamento de academias",
                 "https://github.com/user/gymops"
@@ -89,19 +94,19 @@ class ProjectServiceTest {
     @Test
     @DisplayName("Deve gerar identificadores sequenciais")
     void shouldGenerateSequentialIds() {
-        projectService.addProject(
+        projectService.createProject(
                 "Projeto 1",
                 "Descrição 1",
                 "https://github.com/user/projeto-1"
         );
 
-        projectService.addProject(
+        projectService.createProject(
                 "Projeto 2",
                 "Descrição 2",
                 "https://github.com/user/projeto-2"
         );
 
-        projectService.addProject(
+        projectService.createProject(
                 "Projeto 3",
                 "Descrição 3",
                 "https://github.com/user/projeto-3"
@@ -117,7 +122,7 @@ class ProjectServiceTest {
     @Test
     @DisplayName("Deve buscar um projeto existente pelo ID")
     void shouldGetProjectById() {
-        projectService.addProject(
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
@@ -128,7 +133,10 @@ class ProjectServiceTest {
         assertNotNull(project);
         assertEquals(1L, project.getId());
         assertEquals(VALID_TITLE, project.getTitle());
-        assertEquals(VALID_DESCRIPTION, project.getDescription());
+        assertEquals(
+                VALID_DESCRIPTION,
+                project.getDescription()
+        );
         assertEquals(
                 VALID_REPOSITORY_URL,
                 project.getRepositoryUrl()
@@ -136,17 +144,23 @@ class ProjectServiceTest {
     }
 
     @Test
-    @DisplayName("Deve retornar null quando o projeto não existir")
-    void shouldReturnNullWhenProjectDoesNotExist() {
-        Project project = projectService.getProjectById(999L);
+    @DisplayName("Deve lançar exceção quando o projeto não existir")
+    void shouldThrowExceptionWhenProjectDoesNotExist() {
+        ProjectNotFoundException exception = assertThrows(
+                ProjectNotFoundException.class,
+                () -> projectService.getProjectById(999L)
+        );
 
-        assertNull(project);
+        assertEquals(
+                "Nenhum projeto encontrado com o ID 999.",
+                exception.getMessage()
+        );
     }
 
     @Test
     @DisplayName("Deve atualizar um projeto existente pelo ID")
     void shouldUpdateProjectById() {
-        projectService.addProject(
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
@@ -162,7 +176,6 @@ class ProjectServiceTest {
         Project updatedProject =
                 projectService.getProjectById(1L);
 
-        assertNotNull(updatedProject);
         assertEquals(
                 "CareerHub atualizado",
                 updatedProject.getTitle()
@@ -178,93 +191,203 @@ class ProjectServiceTest {
     }
 
     @Test
-    @DisplayName(
-            "Não deve alterar os projetos quando o ID de atualização não existir"
-    )
-    void shouldNotUpdateProjectsWhenIdDoesNotExist() {
-        projectService.addProject(
+    @DisplayName("Deve atualizar somente os campos informados")
+    void shouldUpdateOnlyProvidedFields() {
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
         );
 
         projectService.updateProjectById(
-                999L,
-                "Título inexistente",
-                "Descrição inexistente",
-                "https://github.com/user/inexistente"
+                1L,
+                "",
+                "Nova descrição",
+                ""
         );
 
-        Project existingProject =
+        Project updatedProject =
                 projectService.getProjectById(1L);
 
-        assertNotNull(existingProject);
-        assertEquals(VALID_TITLE, existingProject.getTitle());
         assertEquals(
-                VALID_DESCRIPTION,
-                existingProject.getDescription()
+                VALID_TITLE,
+                updatedProject.getTitle()
+        );
+        assertEquals(
+                "Nova descrição",
+                updatedProject.getDescription()
         );
         assertEquals(
                 VALID_REPOSITORY_URL,
-                existingProject.getRepositoryUrl()
+                updatedProject.getRepositoryUrl()
+        );
+    }
+
+    @Test
+    @DisplayName(
+            "Deve lançar exceção ao atualizar um projeto inexistente"
+    )
+    void shouldThrowExceptionWhenUpdatingMissingProject() {
+        ProjectNotFoundException exception = assertThrows(
+                ProjectNotFoundException.class,
+                () -> projectService.updateProjectById(
+                        999L,
+                        "Novo título",
+                        "Nova descrição",
+                        "https://github.com/user/inexistente"
+                )
+        );
+
+        assertEquals(
+                "Nenhum projeto encontrado com o ID 999.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    @DisplayName(
+            "Deve lançar exceção quando nenhum dado for informado na atualização"
+    )
+    void shouldThrowExceptionWhenUpdatingWithoutData() {
+        projectService.createProject(
+                VALID_TITLE,
+                VALID_DESCRIPTION,
+                VALID_REPOSITORY_URL
+        );
+
+        InvalidProjectDataException exception = assertThrows(
+                InvalidProjectDataException.class,
+                () -> projectService.updateProjectById(
+                        1L,
+                        "",
+                        "  ",
+                        ""
+                )
+        );
+
+        assertEquals(
+                "Nenhum dado informado para atualizar.",
+                exception.getMessage()
         );
     }
 
     @Test
     @DisplayName("Deve excluir um projeto existente pelo ID")
     void shouldDeleteProjectById() {
-        projectService.addProject(
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
         );
 
-        projectService.deleteProjectByID(1L);
+        projectService.deleteProjectById(1L);
 
         assertTrue(projectService.getProjects().isEmpty());
-        assertNull(projectService.getProjectById(1L));
+
+        assertThrows(
+                ProjectNotFoundException.class,
+                () -> projectService.getProjectById(1L)
+        );
     }
 
     @Test
     @DisplayName(
-            "Não deve excluir outros projetos quando o ID não existir"
+            "Deve lançar exceção ao excluir um projeto inexistente"
     )
-    void shouldNotDeleteProjectsWhenIdDoesNotExist() {
-        projectService.addProject(
+    void shouldThrowExceptionWhenDeletingMissingProject() {
+        ProjectNotFoundException exception = assertThrows(
+                ProjectNotFoundException.class,
+                () -> projectService.deleteProjectById(999L)
+        );
+
+        assertEquals(
+                "Nenhum projeto encontrado com o ID 999.",
+                exception.getMessage()
+        );
+    }
+
+    @Test
+    @DisplayName(
+            "Não deve permitir alteração direta na lista de projetos"
+    )
+    void shouldReturnUnmodifiableProjectList() {
+        projectService.createProject(
                 VALID_TITLE,
                 VALID_DESCRIPTION,
                 VALID_REPOSITORY_URL
         );
 
-        projectService.deleteProjectByID(999L);
+        List<Project> projects =
+                projectService.getProjects();
 
-        List<Project> projects = projectService.getProjects();
+        assertThrows(
+                UnsupportedOperationException.class,
+                projects::clear
+        );
 
-        assertEquals(1, projects.size());
-        assertFalse(projects.isEmpty());
-        assertEquals(VALID_TITLE, projects.getFirst().getTitle());
+        assertEquals(
+                1,
+                projectService.getProjects().size()
+        );
     }
 
     @Test
     @DisplayName(
-            "Não deve permitir alterar a lista interna diretamente"
+            "Deve lançar exceção quando o título estiver vazio"
     )
-    void shouldReturnCopyOfProjectList() {
-        projectService.addProject(
-                VALID_TITLE,
-                VALID_DESCRIPTION,
-                VALID_REPOSITORY_URL
+    void shouldRejectBlankTitle() {
+        InvalidProjectDataException exception = assertThrows(
+                InvalidProjectDataException.class,
+                () -> projectService.createProject(
+                        " ",
+                        VALID_DESCRIPTION,
+                        VALID_REPOSITORY_URL
+                )
         );
 
-        List<Project> returnedProjects =
-                projectService.getProjects();
+        assertEquals(
+                "Título é obrigatório.",
+                exception.getMessage()
+        );
+    }
 
-        returnedProjects.clear();
+    @Test
+    @DisplayName(
+            "Deve lançar exceção quando a descrição estiver vazia"
+    )
+    void shouldRejectBlankDescription() {
+        InvalidProjectDataException exception = assertThrows(
+                InvalidProjectDataException.class,
+                () -> projectService.createProject(
+                        VALID_TITLE,
+                        " ",
+                        VALID_REPOSITORY_URL
+                )
+        );
 
-        List<Project> internalProjects =
-                projectService.getProjects();
+        assertEquals(
+                "Descrição é obrigatório.",
+                exception.getMessage()
+        );
+    }
 
-        assertEquals(1, internalProjects.size());
-        assertFalse(internalProjects.isEmpty());
+    @Test
+    @DisplayName(
+            "Deve lançar exceção quando a URL estiver vazia"
+    )
+    void shouldRejectBlankRepositoryUrl() {
+        InvalidProjectDataException exception = assertThrows(
+                InvalidProjectDataException.class,
+                () -> projectService.createProject(
+                        VALID_TITLE,
+                        VALID_DESCRIPTION,
+                        " "
+                )
+        );
+
+        assertEquals(
+                "URL do repositório é obrigatório.",
+                exception.getMessage()
+        );
     }
 }

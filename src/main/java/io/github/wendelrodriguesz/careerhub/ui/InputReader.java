@@ -13,4 +13,19 @@ public class InputReader {
         System.out.print(label + " ");
         return this.scanner.nextLine();
     }
+
+    public long readLongId() {
+        String input = this.readInput(
+                "Digite o ID do projeto:"
+        );
+
+        try {
+            return Long.parseLong(input);
+
+        } catch (NumberFormatException exception) {
+            throw new NumberFormatException(
+                    "Digite um ID numérico válido."
+            );
+        }
+    }
 }
