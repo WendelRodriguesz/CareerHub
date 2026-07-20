@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@DisplayName("Testes do serviço de perfis")
 public class ProfileServiceTest {
     private static final String VALID_NAME = "John Doe";
     private static final String VALID_PROFESSIONAL_TITLE = "Software Engineer";
@@ -49,7 +50,6 @@ public class ProfileServiceTest {
         assertEquals("New York", profile.getCity());
     }
 
-    // Divida técnica: Depois testar para cado campo.
     @Test
     @DisplayName("Deve lançar uma exceção ao tentar criar um perfil com o campo e-mail vazio")
     void shouldThrowExceptionWhenCreatingProfileWithEmptyName() {

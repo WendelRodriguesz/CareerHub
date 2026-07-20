@@ -1,21 +1,24 @@
 package io.github.wendelrodriguesz.careerhub.ui;
 
 import io.github.wendelrodriguesz.careerhub.controller.ProfileController;
-import io.github.wendelrodriguesz.careerhub.exceptions.InvalidProfileDataException;
-import io.github.wendelrodriguesz.careerhub.exceptions.ProfileAlreadyExistsException;
-import io.github.wendelrodriguesz.careerhub.exceptions.ProfileNotFoundException;
+import io.github.wendelrodriguesz.careerhub.controller.ProjectController;
+import io.github.wendelrodriguesz.careerhub.exceptions.*;
 import io.github.wendelrodriguesz.careerhub.model.Profile;
+import io.github.wendelrodriguesz.careerhub.model.Project;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleUI {
     private final Scanner scanner;
     private final ProfileController profileController;
+    private final ProjectController projectController;
     private final InputReader inputReader;
 
-    public ConsoleUI(Scanner scanner, ProfileController profileController){
+    public ConsoleUI(Scanner scanner, ProfileController profileController, ProjectController projectController){
         this.scanner = scanner;
         this.profileController = profileController;
+        this.projectController = projectController;
         this.inputReader = new InputReader(scanner);
     }
 
@@ -38,7 +41,7 @@ public class ConsoleUI {
 
             switch (operacao) {
                 case "1" -> this.managerProfile();
-                case "2" -> System.out.println("Gerenciamento de projetos ainda não implementado.");
+                case "2" -> this.managerProjects();
                 case "3" -> System.out.println("Gerenciamento de experiências ainda não implementado.");
                 case "4" -> System.out.println("Gerenciamento de formação ainda não implementado.");
                 case "5" -> System.out.println("Gerenciamento de habilidades ainda não implementado.");
@@ -156,6 +159,169 @@ public class ConsoleUI {
             } catch (ProfileNotFoundException e){
                 System.out.println(e.getMessage());
             }
+        }
+    }
+
+    private  void managerProjects(){
+        boolean running = true;
+
+        while (running) {
+            System.out.println();
+            System.out.println("====== Gerenciamento de projetos ======");
+            System.out.println("1. Cadastrar projeto.");
+            System.out.println("2. Listar projetos.");
+            System.out.println("3. Buscar projeto por ID");
+            System.out.println("4. Atualizar dados do projeto por ID.");
+            System.out.println("5. Apagar projeto por ID.");
+            System.out.println("0. Voltar ao menu principal");
+            System.out.print("Escolha uma opção: ");
+            String operacao = scanner.nextLine();
+
+            switch (operacao) {
+                case "1" -> this.createProject();
+                case "2" -> this.listProjects();
+                case "3" -> this.showProjectById();
+                case "4" -> this.updateProjectById();
+                case "5" -> this.deleteProjectById();
+                case "0" -> {
+                    running = false;
+                    System.out.println("Voltando ao menu principal...");
+                    System.out.println("======================================");
+                }
+                default -> System.out.println("Opção inválida. Digite uma opção do menu.");
+            }
+        }
+    }
+
+    private void createProject() {
+        String title = inputReader.readInput(
+                "Digite o título do projeto:"
+        );
+
+        String description = inputReader.readInput(
+                "Digite a descrição do projeto:"
+        );
+
+        String repositoryUrl = inputReader.readInput(
+                "Digite a URL do repositório:"
+        );
+
+        try {
+            projectController.createProject(
+                    title,
+                    description,
+                    repositoryUrl
+            );
+
+            System.out.println("Projeto cadastrado com sucesso.");
+
+        } catch (InvalidProjectDataException exception) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    private void listProjects() {
+        List<Project> projects = projectController.getProjects();
+
+        if (projects.isEmpty()) {
+            System.out.println("Nenhum projeto cadastrado.");
+            return;
+        }
+
+        System.out.println();
+        System.out.println("========== PROJETOS ==========");
+
+        for (Project project : projects) {
+            showProject(project);
+        }
+    }
+
+    private void showProject(Project project) {
+        System.out.println();
+        System.out.println("------------------------------");
+        System.out.println("ID: " + project.getId());
+        System.out.println("Título: " + project.getTitle());
+        System.out.println(
+                "Descrição: " + project.getDescription()
+        );
+        System.out.println(
+                "URL do repositório: "
+                        + project.getRepositoryUrl()
+        );
+    }
+
+    private void showProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            Project project =
+                    projectController.getProjectById(id);
+
+            showProject(project);
+
+        } catch (
+                NumberFormatException
+                | ProjectNotFoundException exception
+        ) {
+            System.out.println(exception.getMessage());
+        }
+    }
+    private void updateProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            String title = inputReader.readInput(
+                    "Novo título ou Enter para manter:"
+            );
+
+            String description = inputReader.readInput(
+                    "Nova descrição ou Enter para manter:"
+            );
+
+            String repositoryUrl = inputReader.readInput(
+                    "Nova URL ou Enter para manter:"
+            );
+
+            projectController.updateProjectById(
+                    id,
+                    title,
+                    description,
+                    repositoryUrl
+            );
+
+            System.out.println("Projeto atualizado com sucesso.");
+
+        } catch (
+                ProjectNotFoundException
+                | InvalidProjectDataException
+                | NumberFormatException exception
+        ) {
+            System.out.println(exception.getMessage());
+        }
+    }
+
+    private void deleteProjectById() {
+        try {
+            long id = inputReader.readLongId();
+
+            String confirmation = inputReader.readInput(
+                    "Tem certeza que deseja apagar? (s/n):"
+            );
+
+            if (!confirmation.equalsIgnoreCase("s")) {
+                System.out.println("Exclusão cancelada.");
+                return;
+            }
+
+            projectController.deleteProjectById(id);
+
+            System.out.println("Projeto apagado com sucesso.");
+
+        } catch (
+                ProjectNotFoundException
+                | NumberFormatException exception
+        ) {
+            System.out.println(exception.getMessage());
         }
     }
 }
